@@ -1,8 +1,9 @@
 import json
+import os
 
 from fastapi import APIRouter, HTTPException
 from fastapi.concurrency import run_in_threadpool
-from fastapi.responses import StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.schemas.travel import TravelPlanRequest, TravelPlanResponse
 from app.services.travel_planner import (
@@ -15,11 +16,36 @@ log = get_logger(__name__)
 
 router = APIRouter()
 
+SERVICE_VERSION = "0.1.0"
+
+
+def build_health_response() -> tuple[dict, int]:
+    provider = os.getenv("LLM_PROVIDER", "groq").strip().lower()
+    llm_env = "GEMINI_API_KEY" if provider == "gemini" else "GROQ_API_KEY"
+
+    checks = {
+        llm_env.lower(): bool(os.getenv(llm_env)),
+        "tavily_api_key": bool(os.getenv("TAVILY_API_KEY")),
+        "aviationstack_api_key": bool(os.getenv("AVIATIONSTACK_API_KEY")),
+    }
+
+    all_ok = all(checks.values())
+    body = {
+        "status": "ok" if all_ok else "degraded",
+        "service": "AI Travel Planner API",
+        "version": SERVICE_VERSION,
+        "llm_provider": provider,
+        "checks": checks,
+    }
+    status_code = 200 if all_ok else 503
+    return body, status_code
+
 
 @router.get("/health")
-def health_check() -> dict[str, str]:
-    log.info("Health check — OK")
-    return {"status": "ok"}
+def health_check() -> JSONResponse:
+    body, status_code = build_health_response()
+    log.info("Health check — %s", body["status"])
+    return JSONResponse(content=body, status_code=status_code)
 
 
 @router.post("/travel-plan", response_model=TravelPlanResponse)

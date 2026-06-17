@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
-from app.api.routes import router
+from app.api.routes import build_health_response, router
 from app.logger import get_logger
 
 log = get_logger(__name__)
@@ -25,9 +26,17 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    @app.get("/health")
+    def root_health_check() -> JSONResponse:
+        body, status_code = build_health_response()
+        return JSONResponse(content=body, status_code=status_code)
+
     app.include_router(router, prefix="/api")
 
-    log.info("FastAPI app ready — routes: /api/health · /api/travel-plan · /api/travel-plan/stream")
+    log.info(
+        "FastAPI app ready — routes: /health · /api/health · "
+        "/api/travel-plan · /api/travel-plan/stream"
+    )
     return app
 
 
