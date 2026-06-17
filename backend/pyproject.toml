@@ -1,0 +1,18 @@
+[project]
+name = "travel-planner-backend"
+version = "0.1.0"
+description = "FastAPI and LangGraph backend for AI travel planning."
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "langchain-core",
+    "langchain-google-genai",
+    "langchain-groq",
+    "langgraph",
+    "python-dotenv",
+    "requests",
+    "uvicorn[standard]",
+]
+
+[tool.uv]
+package = false
