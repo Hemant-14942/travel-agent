@@ -41,7 +41,7 @@ def build_health_response() -> tuple[dict, int]:
     return body, status_code
 
 
-@router.get("/health")
+@router.api_route("/health",methods=["GET","HEAD"])
 def health_check() -> JSONResponse:
     body, status_code = build_health_response()
     log.info("Health check — %s", body["status"])

@@ -27,7 +27,7 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    @app.get("/health",methods=["GET","HEAD"])
+    @app.api_route("/health",methods=["GET","HEAD"])
     def root_health_check() -> JSONResponse:
         body, status_code = build_health_response()
         return JSONResponse(content=body, status_code=status_code)
